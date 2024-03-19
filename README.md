@@ -12,6 +12,50 @@ npm install vue-recursion
 
 ## Use
 
+To use the component (once it's already installed) you just need to import it.
+```vue
+<script lang="ts" setup>
+import Recursion from 'vue-recursion';
+import { reactive } from 'vue';
+//...
+const nested_list_data = reactive<t_node<number>>([0,[
+  [1,[
+  [5],
+  [6]
+  ]],
+  [2],
+  [3,[
+  [7],
+  [8]
+  ]],
+  [4],
+]]);
+</script>
+```
+
+You can also import the helper types this way
+```vue
+<script lang="ts" setup>
+import { default as Recursion, type t_node } from 'vue-recursion';
+import { reactive } from 'vue';
+//...
+
+//It's not required to make the data reactive if you want to render the data statically
+const nested_list_data = reactive<t_node<number>>([0,[
+  [1,[
+  [5],
+  [6]
+  ]],
+  [2],
+  [3,[
+  [7],
+  [8]
+  ]],
+  [4],
+]]);
+</script>
+```
+
 ### Simple nested list example
 
 The most basic recursion example in web are nested list. This is a way of displaying them using the Recursion Component.
@@ -19,19 +63,7 @@ The most basic recursion example in web are nested list. This is a way of displa
 ```vue
 <template>
   <ul class="list">
-    <Recursion :data="
-      [0,[
-        [1,[
-        [5],
-        [6]
-        ]],
-        [2],
-        [3,[
-        [7],
-        [8]
-        ]],
-        [4],
-      ]]" v-slot="{ component, data }">
+    <Recursion :data="nested_list_data" v-slot="{ component, data }">
       <li>
         <p>{{ data }}</p>
         <ul class="list">
@@ -45,35 +77,35 @@ The most basic recursion example in web are nested list. This is a way of displa
 
 ```html
 <!--output-->
-<ul style="padding-left: 0px; text-align: left;">
+<ul>
 	<li>0
-    <ul style="padding-left: 2rem;">
+    <ul>
 			<li>1
-        <ul style="padding-left: 2rem;">
+        <ul>
 					<li>5
-            <ul style="padding-left: 2rem;"></ul>
+            <ul></ul>
 					</li>
 					<li>6
-            <ul style="padding-left: 2rem;"></ul>
+            <ul></ul>
 					</li>
 				</ul>
 			</li>
 			<li>2
-        <ul style="padding-left: 2rem;">
+        <ul>
 				</ul>
 			</li>
 			<li>3
-        <ul style="padding-left: 2rem;">
+        <ul>
 					<li>7
-            <ul style="padding-left: 2rem;"></ul>
+            <ul></ul>
 					</li>
 					<li>8
-            <ul style="padding-left: 2rem;"></ul>
+            <ul></ul>
 					</li>
 				</ul>
 			</li>
 			<li>4
-        <ul style="padding-left: 2rem;">
+        <ul>
 				</ul>
 			</li>
 		</ul>
@@ -91,19 +123,7 @@ However, in order to allow more customization in the way a component is rendered
 ```vue
 <template>
   <ul class="list">
-    <Recursion :data="
-      [0,[
-        [1,[
-        [5],
-        [6]
-        ]],
-        [2],
-        [3,[
-        [7],
-        [8]
-        ]],
-        [4],
-      ]]" v-slot="{ components, data }">
+    <Recursion :data="nested_list_data" v-slot="{ components, data }">
       <li>
         <p>{{ data }}</p>
         <TransitionGroup name="list" tag="ul" class="list">
@@ -135,7 +155,7 @@ const p = defineProps<{
   <li>
     <p>value : {{ p.n }} - {{ p.t }}</p>
     <ul>
-      <slot/>
+      <slot><li>no children</li></slot>
     </ul>
   </li>
 </template>
