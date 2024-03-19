@@ -1,0 +1,35 @@
+{
+  "name": "vue-recursion",
+  "description": "a renderless vue component that handles recursion logic",
+  "version": "0.0.2",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SebasZwolf/vue-recursion.git"
+  },
+  "main": "./dist/zwolf-components.umd.cjs",
+  "module": "./dist/zwolf-components.js",
+  "types": "./dist/zwolf-components.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/zwolf-components.js",
+      "require": "./dist/zwolf-components.umd.cjs"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.28",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "typescript": "^5.2.2",
+    "vite": "^5.1.6",
+    "vite-plugin-dts": "^3.7.3",
+    "vue-tsc": "^1.8.27"
+  }
+}
