@@ -1,8 +1,6 @@
 # Vue-Recursion
 
 This is a renderless component that handles the recursion logic and expects the render template as its children.
-This Component expects the tree data as a `prop`, then uses it to render nodes recusibly.
-At each node, the tree item data and other node information are obtained through the exposed `v-slot` prop of the component. This will be better explained in the examples.
 
 ## Installation
 
@@ -12,49 +10,41 @@ npm install vue-recursion
 
 ## Use
 
-To use the component (once it's already installed) you just need to import it.
+To use the component, import it and pass as the prop `node` the root node.
+
 ```vue
+
 <script lang="ts" setup>
 import Recursion from 'vue-recursion';
 import { reactive } from 'vue';
 //...
-const nested_list_data = reactive<t_node<number>>([0,[
-  [1,[
-  [5],
-  [6]
-  ]],
-  [2],
-  [3,[
-  [7],
-  [8]
-  ]],
-  [4],
-]]);
-</script>
-```
 
-You can also import the helper types this way
-```vue
-<script lang="ts" setup>
-import { default as Recursion, type t_node } from 'vue-recursion';
-import { reactive } from 'vue';
-//...
-
-//It's not required to make the data reactive if you want to render the data statically
-const nested_list_data = reactive<t_node<number>>([0,[
-  [1,[
-  [5],
-  [6]
-  ]],
-  [2],
-  [3,[
-  [7],
-  [8]
-  ]],
-  [4],
-]]);
+const nested_list_data = reactive({
+	title : "title 1",
+	href : "title-1",
+	sections : [{
+		title : "title 1.1",
+		href : "title-1-1",
+	},
+	{
+		title : "title 1.2",
+		href : "title-1-2",
+		sections : [{
+			title : "title 1.2.1",
+			href : "title-1-2-1",
+		},{
+			title : "title 1.2.2",
+			href : "title-1-2-2",
+		}]
+	},
+	{
+		title : "title 1.3",
+		href : "title-1-3",
+	}]
+});
 </script>
-```
+
+```	
 
 ### Simple nested list example
 
@@ -62,78 +52,61 @@ The most basic recursion example in web are nested list. This is a way of displa
 
 ```vue
 <template>
-  <ul class="list">
-    <Recursion :data="nested_list_data" v-slot="{ component, data }">
-      <li>
-        <p>{{ data }}</p>
-        <ul class="list">
-          <component :is="component"/>
-        </ul>
-      </li>
-    </Recursion>
-  </ul>
+	<ul class="list">
+		<Recursion :node="nested_list_data" v-slot="{ data, slot, depth, index }">
+			<li>
+				<a :href="data.href">{{ data.title }}</a>
+				<ul class="list" v-if="data.sections?.length">
+					<component v-for="child, i of data.sections" :is="slot" :node="child" :index="i" :key="child.href"/>
+				</ul>
+			</li>
+		</Recursion>
+	</ul>
 </template>
 ```
 
 ```html
 <!--output-->
-<ul>
-	<li>0
-    <ul>
-			<li>1
-        <ul>
-					<li>5
-            <ul></ul>
-					</li>
-					<li>6
-            <ul></ul>
-					</li>
+<ul class="list">
+	<li><a href="title-1">title 1</a>
+		<ul class="list">
+			<li><a href="title-1-1">title 1.1</a><!--v-if--></li>
+			<li><a href="title-1-2">title 1.2</a>
+				<ul class="list">
+					<li><a href="title-1-2-1">title 1.2.1</a><!--v-if--></li>
+					<li><a href="title-1-2-2">title 1.2.2</a><!--v-if--></li>
 				</ul>
 			</li>
-			<li>2
-        <ul>
-				</ul>
-			</li>
-			<li>3
-        <ul>
-					<li>7
-            <ul></ul>
-					</li>
-					<li>8
-            <ul></ul>
-					</li>
-				</ul>
-			</li>
-			<li>4
-        <ul>
-				</ul>
-			</li>
+			<li><a href="title-1-3">title 1.3</a><!--v-if--></li>
 		</ul>
 	</li>
 </ul>
 ```
 
-As shown, the component receives the data as a `tree structure` and the rendering template as a child (`<li>...</li>`), then exposes the *children* recursive elements in the form of the `component` v-slot prop. This is very similar in the way that [vue-router](https://router.vuejs.org/guide/advanced/router-view-slot.html) handles the styling of child pages, allowing the user to wrap the rendered page in a custom layout.
+As shown, the component receives ~~the data as a `tree structure`~~ any `Record<string, unknown>` and the rendering template as a child (this case is `<li>...</li>`), then ~~exposes the *children* recursive elements in the form of the `component` v-slot~~ you can use any node attribuite as children to iterate.
 
 ### Custom recursion wrapper
 
-In the previous example, the `<component>` renders the child elements of each iteration of the recursion as `fragments`.
-However, in order to allow more customization in the way a component is rendered, the `<Recursion>` component also exposes the `components` as an iterable array. This allows the component to have a `root-node` element that can later be used to be animated using the [Transition Group](https://vuejs.org/guide/built-ins/transition-group.html) built-in component.
+~~In the previous example, the `<component>` renders the child elements of each iteration of the recursion as `fragments`.~~
+~~However, in order to allow more customization in the way a component is rendered, the `<Recursion>` component also exposes the `components` as an iterable array. This allows the component to have a `root-node` element that can later be used to be animated using the [Transition Group](https://vuejs.org/guide/built-ins/transition-group.html) built-in component~~.
+
+In case a dedicated wrapper is desired around the next rendered iteration, the `<component :is="slot"/>` can be rendered as a nested child inside the iteration
+
 
 ```vue
 <template>
-  <ul class="list">
-    <Recursion :data="nested_list_data" v-slot="{ components, data }">
-      <li>
-        <p>{{ data }}</p>
-        <TransitionGroup name="list" tag="ul" class="list">
-          <li v-for="c in components" :key="c.key"> 
-            <component :is="c"/>
-          </li>
-        </TransitionGroup>
-      </li>
-    </Recursion>
-  </ul>
+	<ul class="list">
+		<li>
+			<Recursion :node="nested_list_data" v-slot="{ data, slot, depth, index }">
+				<a :href="data.href">{{ data.title }}</a>
+				<TransitionGroup name="list" tag="ul" class="list" v-if="data.sections?.length">
+					<li v-for="child, i in data.sections" :key="c.href"> 
+						<component :is="slot" :node="child" />
+					</li>
+				</TransitionGroup>
+			</Recursion>
+		</li>
+	</ul>
 </template>
 ```
 
@@ -143,65 +116,30 @@ Of course, the `Recursion` component allows the use of custom components as chil
 
 ```vue
 <script lang="ts" setup>
-//Comp
+//Link
 const p = defineProps<{
-  n : number;
-  t : string;
+	href : string;
+	title : string;
 }>();  
-
 </script>
 
 <template>
-  <li>
-    <p>value : {{ p.n }} - {{ p.t }}</p>
-    <ul>
-      <slot><li>no children</li></slot>
-    </ul>
-  </li>
+	<a :href="data.href">{{ data.title }}</a>
 </template>
 ```
 
 ```vue
 <template>
-  <ul>
-    <Recursion :data="
-      [{ 
-        n : 0,
-        t : 'zero'
-        key : 0,
-        },[
-          [{
-            n : 12,
-            t : 'twelve',
-            key : 1,
-          }, [
-            [{
-              n : 4,
-              t : 'four',
-              key : 2,
-            }],
-            [{
-              n : 5,
-              t : 'five',
-              key : 3,
-            }],[{
-              n : 8,
-              t : 'eight',
-              key : 4,
-            }]
-          ]],
-          [{
-            n : 3,
-            t : 'tree',
-            key : 5,
-          }]
-      ]]" v-slot="{ component, data }">
-
-      <Comp :n="data.n" :t="data.t" :key="data.key">
-        <component :is="component"/>
-      </Comp>
-    </Recursion>
-  </ul>
+	<ul class="list">
+		<Recursion :node="nested_list_data" v-slot="{ data, slot, depth, index }">
+			<li>
+				<Link :data />
+				<ul class="list" v-if="data.sections?.length">
+					<component v-for="child, i of data.sections" :is="slot" :node="child" :index="i" :key="child.href"/>
+				</ul>
+			</li>
+		</Recursion>
+	</ul>
 </template>
 ```
 
@@ -209,46 +147,38 @@ Now, something **very** important here is the `key` property in the data objects
 
 ## Guide
 
-This component handles most logic internally but has one required prop which is the `data`. The data type is defined as
-```ts
-//The data tree node type is defined as a tuple
-type t_node<T = unknown> = [T, t_node[]?];
-```
-where, the first element of the tuple is the tree node's item and the second is the array of children nodes.
+This component removes the operations down interally in exchange of a more flexible aproach. There'd cases where the component may render childs from an attribuite named `sections`, `children`, etc. or may have a more complex schema. For this cases, the previous implementation was not usable, since i'd require an extra parsing step.
 
-The Recursion `v-slot` exposes more than only the `data` and the `component` & `components` objects.
-
+Now, the component only exposes the `v-slot` as
 ```ts
-type t_slotprops<T = any> = {
+type t_slotprops<T> = {
 	data : T,
+	slot : unknown,
 	depth : number,
 	index : number,
-	children : Readonly<raw_tree_branch<T>[]>,
-	chain : number[],
-		
-	component? : unknown,
-	components : unknown[],
 };
 ```
 
 | Property | Type | description |
 |---|---|---|
-| data | any | Represents the item of the current node. This property is defined by the used when the tree is passed as a prop to the component. |
-| depth | number | The depth of the recursion of the current node. The root node with get a value of 0. |
-| index | number | The index of this current node inside its parent children array. |
-| children | readonly t_node<any>[] | (CAUTIOUS USE) the raw readonly array list of children of the current node. |
-| component |  | The fragment component that renders the child recursion nodes. |
-| components | [] | An array of components. Each one renders a child recursion node. Each node also exposes its key. |  
+| data | T | this is the node itself, at depth 0 is the same value passed as `node` prop |
+| slot | unknown | this is the next-recursion iteration's `render function`, pass it as the `is` prop to `<component/>` |
+| depth | number | The depth of this current node. The root node's `depth` is 0 |
+| index | number | The index of this current node. The root node's `index` is 0, this is handled manually by the render logic |
 
-In order to better use the exposed properties, this Component exposes a type `t_slotprops` that can be used to strongly type the `data` property. 
+This component uses vue's generics to infer the node's type. It may not always work tho.
 
-```vue
-<template>
-  <Recursion :data v-slot="{ data, component } : t_slotprops<number>">
-    {{ data }} <!-- here data is now recognized as number -->
-    <component :is="component"/>
-  </Recursion>
-</template>
-```
+It is not required, but heavily recommended to have a `key` property of type `propertyKey` to be used as `key` prop for the iteration of node's children.
 
-When using non-primitive item types is optional but **strongly** recommended to add a `key` property to each node item, which **should** be a **primitive** **unique** value `number | string | symbol`.
+## Common mistakes
+
+this new aproach is more flexible, which means it is easier to make mistakes; therefore, some suggestions you could use are:
+
+- The inner slot of the `<Recursion/>` is the template used in each iteration
+- You can use any property as an iterable for the next recursion level, but it is best if it is an `Array<T>` and has an _array-suggestive name_ such as _sections_, _children_, _items_.
+- The outer wrapper around the `<Recursion/>` in important too. Remember that the prop passed to `<Recursion/>` is the root of the tree; however, in most cases, the root shares similar styling to the rest of the nodes which means that, if its a `<li/>`, it requires an outer `<ul/>` (`<ol/>`)
+
+## Considerations
+
+- There's no longer a `chain` property on slot props, this property caused some rerenders that affected performance. It may be added back in the future if said performance issues get fixed
+- Exports are now `cjs` and `esm` rather than `umd`

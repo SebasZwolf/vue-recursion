@@ -2,15 +2,19 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import dts from 'vite-plugin-dts'
 
-import { resolve } from 'path'
-
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   build : {
-    lib : {
-      entry : resolve(__dirname, 'src/index.ts'),
-      name: 'index',
-      fileName: 'index',
+    // lib : {
+    //   entry : 'src/index.ts',
+    //   name: 'index',
+    //   fileName: 'index',
+    // },
+    lib: {
+      entry: "src/index.ts",
+      name : "VueRecursion",
+      formats: ["es", "cjs"],
+      fileName: f => `index.${f === "cjs" ? "cjs" : "esm"}.js`
     },
     rollupOptions: {
       external: ['vue'],
@@ -21,8 +25,13 @@ export default defineConfig({
       },
     }
   },
-  plugins: [vue(), dts({
+  plugins: [vue({}), dts({
     insertTypesEntry : true,
+    // rollupTypes : true,
   })],
+  root: command === "serve" ? path.resolve(__dirname, "example/") : undefined
+}))
 
-})
+console.log(path.resolve(__dirname, "example/"))
+
+import path from 'node:path'

@@ -1,3 +1,2 @@
-import r from './components/Recursion.vue';
+import r from './Recursion.vue';
 export default r;
-export type * from './components/Recursion.vue';
